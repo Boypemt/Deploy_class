@@ -5,4 +5,3 @@ function main() {
     console.log("hello from Clouddeploy");
 }
 main();
-//# sourceMappingURL=index.js.map
