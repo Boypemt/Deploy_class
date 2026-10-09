@@ -1,0 +1,41 @@
+# Dependencies — reinstalled inside the image so the binaries match the
+# container's OS/arch. Copying the host's node_modules is the usual cause of
+# "invalid ELF header" style failures.
+node_modules
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# Version control and CI
+.git
+.gitignore
+.gitattributes
+.github
+
+# Secrets / local environment
+.env
+.env.*
+
+# Editor and OS clutter
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker's own files — no reason to ship them into the image
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Dev-only tooling
+nodemon.json
+*.tsbuildinfo
+coverage
+
+# NOTE: dist/ is deliberately NOT ignored. package.json has no build script and
+# `npm start` runs `node dist/index.js`, so the compiled output must be copied in.
+# If you later add a build step to the Dockerfile, ignore dist/ here so a stale
+# local build can't shadow a fresh one.
+#
+# public/ is also NOT ignored — index.ts serves it with express.static at runtime.

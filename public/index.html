@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User API</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --border: #d9dde3;
+    --text: #1d2228;
+    --muted: #697280;
+    --accent: #2f6feb;
+    --ok: #1a7f46;
+    --warn: #b4530a;
+    --err: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 48px;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    background: #fff;
+    color: var(--text);
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > div { flex: 1 1 180px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  button {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { filter: brightness(1.08); color: #fff; }
+  button.danger:hover { border-color: var(--err); color: var(--err); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  td.id { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+  .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 12px; font-weight: 600; color: #fff; background: var(--muted);
+  }
+  .pill.ok { background: var(--ok); }
+  .pill.warn { background: var(--warn); }
+  .pill.err { background: var(--err); }
+  pre {
+    margin: 10px 0 0;
+    padding: 12px;
+    background: #10151c;
+    color: #e4e8ee;
+    border-radius: 6px;
+    overflow-x: auto;
+    font: 12px/1.5 ui-monospace, Consolas, monospace;
+  }
+  .hint { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+  .editing { color: var(--warn); font-size: 13px; margin-left: 4px; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181d; --panel: #1b2027; --border: #2d343d;
+      --text: #e6eaf0; --muted: #959eab; --accent: #5a8cf7;
+      --ok: #3fae6c; --warn: #d98324; --err: #e05a4a;
+    }
+    :root:not([data-theme="light"]) input { background: #121720; }
+    :root:not([data-theme="light"]) button { background: #222932; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>User API</h1>
+  <p class="sub">Browser client for <code>/api/users</code> — create, list, fetch, update and delete.</p>
+
+  <div class="panel">
+    <h2>
+      <span id="formTitle">Create user (POST)</span>
+      <span class="editing" id="editingNote" hidden></span>
+    </h2>
+    <form id="userForm">
+      <div class="row">
+        <div>
+          <label for="name">Name</label>
+          <input id="name" name="name" autocomplete="off">
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="off">
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" autocomplete="off">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary" id="submitBtn">Create</button>
+        <button type="button" id="cancelEdit" hidden>Cancel edit</button>
+      </div>
+      <p class="hint" id="formHint">All three fields are required by the schema.</p>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>Find one by id (GET /api/users/:id)</h2>
+    <div class="row">
+      <div style="flex: 3 1 320px">
+        <label for="lookupId">User id</label>
+        <input id="lookupId" placeholder="paste an _id from the table" autocomplete="off">
+      </div>
+      <div style="flex: 0 0 auto; align-self: flex-end">
+        <button type="button" id="lookupBtn">Fetch</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>All users (GET /api/users)</h2>
+    <div class="actions" style="margin-top: 0; margin-bottom: 12px">
+      <button type="button" id="reloadBtn">Reload list</button>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Id</th><th></th></tr>
+      </thead>
+      <tbody id="userRows"></tbody>
+    </table>
+    <div class="empty" id="emptyNote" hidden>No users yet. Create one above.</div>
+  </div>
+
+  <div class="panel">
+    <h2>Last response <span class="pill" id="statusPill" hidden></span></h2>
+    <div class="hint" id="lastCall">No request sent yet.</div>
+    <pre id="output" hidden></pre>
+  </div>
+</div>
+
+<script>
+  const API = '/api/users';
+  const el = (id) => document.getElementById(id);
+  let editingId = null;
+
+  // Every request goes through here so the response panel always reflects the last call.
+  async function call(method, url, body) {
+    const opts = { method, headers: {} };
+    if (body !== undefined) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    let res, data;
+    try {
+      res = await fetch(url, opts);
+    } catch (err) {
+      show(method + ' ' + url, null, { error: 'Request failed: ' + err.message });
+      return { ok: false };
+    }
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+    show(method + ' ' + url, res.status, data);
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  function show(call, status, data) {
+    const pill = el('statusPill');
+    if (status === null) {
+      pill.hidden = false;
+      pill.textContent = 'network error';
+      pill.className = 'pill err';
+    } else {
+      pill.hidden = false;
+      pill.textContent = status;
+      pill.className = 'pill ' + (status < 300 ? 'ok' : status < 500 ? 'warn' : 'err');
+    }
+    el('lastCall').textContent = call;
+    const out = el('output');
+    out.hidden = false;
+    out.textContent = data === null ? '(no body)' : JSON.stringify(data, null, 2);
+  }
+
+  async function loadUsers() {
+    const { ok, data } = await call('GET', API);
+    const rows = el('userRows');
+    rows.textContent = '';
+    const list = ok && Array.isArray(data) ? data : [];
+    el('emptyNote').hidden = list.length > 0;
+    for (const user of list) {
+      const tr = document.createElement('tr');
+      const name = document.createElement('td');
+      name.textContent = user.name ?? '';
+      const email = document.createElement('td');
+      email.textContent = user.email ?? '';
+      const id = document.createElement('td');
+      id.className = 'id';
+      id.textContent = user._id;
+      const act = document.createElement('td');
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.textContent = 'Edit';
+      edit.onclick = () => startEdit(user);
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'danger';
+      del.textContent = 'Delete';
+      del.onclick = () => removeUser(user);
+      act.append(edit, ' ', del);
+      tr.append(name, email, id, act);
+      rows.append(tr);
+    }
+  }
+
+  function startEdit(user) {
+    editingId = user._id;
+    el('name').value = user.name ?? '';
+    el('email').value = user.email ?? '';
+    el('password').value = '';
+    el('formTitle').textContent = 'Update user (PUT)';
+    el('editingNote').hidden = false;
+    el('editingNote').textContent = user._id;
+    el('submitBtn').textContent = 'Save changes';
+    el('cancelEdit').hidden = false;
+    el('formHint').textContent = 'Blank fields are left unchanged — PUT accepts a partial body.';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetForm() {
+    editingId = null;
+    el('userForm').reset();
+    el('formTitle').textContent = 'Create user (POST)';
+    el('editingNote').hidden = true;
+    el('submitBtn').textContent = 'Create';
+    el('cancelEdit').hidden = true;
+    el('formHint').textContent = 'All three fields are required by the schema.';
+  }
+
+  async function removeUser(user) {
+    if (!confirm('Delete ' + (user.name || user._id) + '?')) return;
+    const { ok } = await call('DELETE', API + '/' + user._id);
+    if (ok && editingId === user._id) resetForm();
+    if (ok) loadUsers();
+  }
+
+  el('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const body = {};
+    for (const field of ['name', 'email', 'password']) {
+      const value = el(field).value.trim();
+      // On update, skip blanks so an untouched field keeps its stored value.
+      if (value || !editingId) body[field] = value;
+    }
+    const { ok } = editingId
+      ? await call('PUT', API + '/' + editingId, body)
+      : await call('POST', API, body);
+    if (ok) {
+      resetForm();
+      loadUsers();
+    }
+  });
+
+  el('cancelEdit').addEventListener('click', resetForm);
+  el('reloadBtn').addEventListener('click', loadUsers);
+  el('lookupBtn').addEventListener('click', () => {
+    const id = el('lookupId').value.trim();
+    if (!id) return;
+    call('GET', API + '/' + id);
+  });
+
+  loadUsers();
+</script>
+</body>
+</html>

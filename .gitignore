@@ -4,3 +4,9 @@
 !dist/index.js
 !dist/Test1.js
 !dist/Utils.js
+!dist/Publish_Docker_image
+
+!Dockerfile
+!.dockerignore
+!public/
+!public/**
